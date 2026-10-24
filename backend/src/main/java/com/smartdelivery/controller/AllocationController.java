@@ -16,9 +16,11 @@ public class AllocationController {
     }
 
     @PostMapping("/allocate/{orderId}")
-    public ResponseEntity<?> allocateOrder(@PathVariable String orderId) {
+    public ResponseEntity<?> allocateOrder(
+            @PathVariable String orderId,
+            @RequestParam(required = false) String strategy) {
         try {
-            return ResponseEntity.ok(allocationService.allocateOrder(orderId));
+            return ResponseEntity.ok(allocationService.allocateOrder(orderId, strategy));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
         }

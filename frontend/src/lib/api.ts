@@ -19,4 +19,7 @@ export const deleteWarehouse = (id: string) => api.delete(`/warehouses/${id}`).t
 export const getVehicles = () => api.get<Vehicle[]>('/vehicles').then(res => res.data);
 export const getAvailableVehicles = () => api.get<Vehicle[]>('/vehicles/available').then(res => res.data);
 
-export const allocateOrder = (orderId: string) => api.post<AllocationResult>(`/allocation/allocate/${orderId}`).then(res => res.data);
+export const allocateOrder = (orderId: string, strategy?: string) => {
+    const url = strategy ? `/allocation/allocate/${orderId}?strategy=${encodeURIComponent(strategy)}` : `/allocation/allocate/${orderId}`;
+    return api.post<AllocationResult>(url).then(res => res.data);
+};

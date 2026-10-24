@@ -65,18 +65,18 @@ export default function CreateOrder() {
     return (
         <div className="max-w-2xl mx-auto py-6">
             <Card className="shadow-lg border-0 ring-1 ring-slate-200 dark:ring-slate-800">
-                <CardHeader className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-800">
+                <CardHeader className="bg-slate-50 border-b border-slate-200">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                            <div className="p-2 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
-                                <PackagePlus className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                            <div className="p-2 bg-red-50 text-red-600 rounded-lg">
+                                <PackagePlus className="w-5 h-5" />
                             </div>
                             <div>
-                                <CardTitle>Create Delivery Order</CardTitle>
+                                <CardTitle className="text-slate-900">Create Delivery Order</CardTitle>
                                 <CardDescription>Enter order details to find the best delivery plan</CardDescription>
                             </div>
                         </div>
-                        <Button type="button" variant="outline" size="sm" onClick={handleGetLocation} className="text-xs">
+                        <Button type="button" variant="outline" size="sm" onClick={handleGetLocation} className="text-xs border-slate-200 text-slate-700 hover:bg-red-50 hover:text-red-700">
                             📍 Use My Location
                         </Button>
                     </div>
@@ -128,16 +128,16 @@ export default function CreateOrder() {
                             </Select>
                         </div>
                         <div className="flex gap-6">
-                            <label className="flex items-center gap-2 text-sm font-medium">
-                                <input type="checkbox" checked={form.expressDelivery} onChange={e => setForm({...form, expressDelivery: e.target.checked})} className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-600" />
+                            <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                                <input type="checkbox" checked={form.expressDelivery} onChange={e => setForm({...form, expressDelivery: e.target.checked})} className="rounded border-slate-300 text-red-600 focus:ring-red-600" />
                                 Express Delivery
                             </label>
-                            <label className="flex items-center gap-2 text-sm font-medium">
-                                <input type="checkbox" checked={form.insurance} onChange={e => setForm({...form, insurance: e.target.checked})} className="rounded border-slate-300 text-indigo-600 focus:ring-indigo-600" />
+                            <label className="flex items-center gap-2 text-sm font-medium text-slate-700">
+                                <input type="checkbox" checked={form.insurance} onChange={e => setForm({...form, insurance: e.target.checked})} className="rounded border-slate-300 text-red-600 focus:ring-red-600" />
                                 Insurance
                             </label>
                         </div>
-                        <Button type="submit" disabled={loading} className="w-full bg-indigo-600 hover:bg-indigo-700 text-white">
+                        <Button type="submit" disabled={loading} className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 shadow-xs">
                             {loading ? 'Processing...' : 'Find Best Delivery Plan'}
                         </Button>
                     </form>

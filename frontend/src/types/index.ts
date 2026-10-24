@@ -46,7 +46,25 @@ export interface AllocationCandidate {
     finalScore: number;
 }
 
+export interface PatternExecutionEvent {
+    sequence: number;
+    phase: 'FACTORY' | 'STRATEGY' | 'BUILDER';
+    eventType: string;
+    message: string;
+    vehicleId?: string;
+    vehicleType?: 'BIKE' | 'VAN' | 'TRUCK';
+    warehouseId?: string;
+    warehouseName?: string;
+    status: 'SUCCESS' | 'REJECTED' | 'INFO';
+    rejectionReason?: string;
+    builderMethod?: string;
+    fieldName?: string;
+    fieldValue?: any;
+    details?: Record<string, any>;
+}
+
 export interface AllocationResult {
     recommendedPlan: AllocationCandidate;
     alternatives: AllocationCandidate[];
+    executionTrace?: PatternExecutionEvent[];
 }

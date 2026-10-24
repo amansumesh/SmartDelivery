@@ -30,7 +30,7 @@ export default function Orders() {
             <div className="flex justify-between items-center">
                 <h1 className="text-2xl font-bold">Orders</h1>
                 <Link href="/orders/new">
-                    <Button className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">
+                    <Button className="bg-red-600 hover:bg-red-700 text-white shadow-xs font-semibold">
                         <Plus className="w-4 h-4 mr-2" /> Create Order
                     </Button>
                 </Link>
