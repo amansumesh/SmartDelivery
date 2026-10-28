@@ -26,9 +26,9 @@ public class DataLoader implements CommandLineRunner {
         }
         
         if (vehicleRepository.count() == 0) {
-            VehicleDocument v1 = new VehicleDocument(); v1.setType("BIKE"); v1.setCapacity(10); v1.setCostPerKm(8); v1.setAvailable(true); v1.setSupportsFragile(true);
-            VehicleDocument v2 = new VehicleDocument(); v2.setType("VAN"); v2.setCapacity(50); v2.setCostPerKm(15); v2.setAvailable(true); v2.setSupportsFragile(true);
-            VehicleDocument v3 = new VehicleDocument(); v3.setType("TRUCK"); v3.setCapacity(500); v3.setCostPerKm(30); v3.setAvailable(true); v3.setSupportsFragile(false);
+            VehicleDocument v1 = new VehicleDocument(); v1.setType("BIKE"); v1.setCapacity(10); v1.setCostPerKm(8); v1.setAvailable(true); v1.setSupportsFragile(true); v1.setMaxRange(50.0);
+            VehicleDocument v2 = new VehicleDocument(); v2.setType("VAN"); v2.setCapacity(50); v2.setCostPerKm(15); v2.setAvailable(true); v2.setSupportsFragile(true); v2.setMaxRange(300.0);
+            VehicleDocument v3 = new VehicleDocument(); v3.setType("TRUCK"); v3.setCapacity(500); v3.setCostPerKm(30); v3.setAvailable(true); v3.setSupportsFragile(false); v3.setMaxRange(Double.MAX_VALUE);
             vehicleRepository.save(v1);
             vehicleRepository.save(v2);
             vehicleRepository.save(v3);

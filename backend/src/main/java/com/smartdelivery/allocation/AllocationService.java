@@ -106,7 +106,7 @@ public class AllocationService {
                         .sequence(seq++)
                         .phase("FACTORY")
                         .eventType("VEHICLE_CREATED")
-                        .message("Factory created concrete " + vehicle.getClass().getSimpleName() + " instance [capacity=" + vehicle.getCapacity() + "kg, cost/km=" + vehicle.getCostPerKm() + ", supportsFragile=" + vehicle.supportsFragile() + "]")
+                        .message("Factory created concrete " + vehicle.getClass().getSimpleName() + " instance [capacity=" + vehicle.getCapacity() + "kg, cost/km=" + vehicle.getCostPerKm() + ", maxRange=" + (vehicle.getMaxRange() >= 999999 ? "Unlimited" : vehicle.getMaxRange() + "km") + ", supportsFragile=" + vehicle.supportsFragile() + "]")
                         .vehicleId(vDoc.getId())
                         .vehicleType(vDoc.getType())
                         .warehouseId(warehouse.getId())
@@ -116,6 +116,7 @@ public class AllocationService {
                                 "concreteClass", vehicle.getClass().getSimpleName(),
                                 "capacity", vehicle.getCapacity(),
                                 "costPerKm", vehicle.getCostPerKm(),
+                                "maxRange", vehicle.getMaxRange(),
                                 "supportsFragile", vehicle.supportsFragile(),
                                 "baseDeliveryTime", vehicle.getDeliveryTime()
                         ))
@@ -139,7 +140,25 @@ public class AllocationService {
                     continue;
                 }
 
-                // 4. Package compatibility validation
+                // 4. Distance / Range limit validation (e.g. Bike max 50km)
+                if (distance > vehicle.getMaxRange()) {
+                    executionTrace.add(com.smartdelivery.dto.PatternExecutionEvent.builder()
+                            .sequence(seq++)
+                            .phase("FACTORY")
+                            .eventType("CONSTRAINT_EVALUATED")
+                            .message("Candidate rejected: Delivery distance (" + String.format("%.2f", distance) + "km) exceeds vehicle max range (" + String.format("%.0f", vehicle.getMaxRange()) + "km)")
+                            .vehicleId(vDoc.getId())
+                            .vehicleType(vDoc.getType())
+                            .warehouseId(warehouse.getId())
+                            .warehouseName(warehouse.getName())
+                            .status("REJECTED")
+                            .rejectionReason("Distance exceeds vehicle max range (" + String.format("%.1f", distance) + "km > " + String.format("%.0f", vehicle.getMaxRange()) + "km)")
+                            .details(Map.of("distance", distance, "maxRange", vehicle.getMaxRange()))
+                            .build());
+                    continue;
+                }
+
+                // 5. Package compatibility validation
                 if (order.getPackageType() == Order.PackageType.FRAGILE && !vehicle.supportsFragile()) {
                     executionTrace.add(com.smartdelivery.dto.PatternExecutionEvent.builder()
                             .sequence(seq++)
@@ -179,7 +198,7 @@ public class AllocationService {
                     .eventType("ALLOCATION_FAILED")
                     .message("No suitable vehicle candidate satisfied the constraints")
                     .status("REJECTED")
-                    .rejectionReason("All candidate vehicles were rejected based on capacity or fragile compatibility constraints")
+                    .rejectionReason("All candidate vehicles were rejected based on capacity, distance range, or fragile compatibility constraints")
                     .build());
             throw new RuntimeException("No suitable allocation found");
         }

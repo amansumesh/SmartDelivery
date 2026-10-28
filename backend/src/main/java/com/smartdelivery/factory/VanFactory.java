@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 public class VanFactory extends VehicleFactory {
     @Override
     public DeliveryVehicle createVehicle(VehicleDocument doc) {
-        return new Van(doc.getCapacity(), doc.getCostPerKm(), doc.isSupportsFragile());
+        double maxRange = (doc.getMaxRange() != null && doc.getMaxRange() > 0) ? doc.getMaxRange() : 300.0;
+        return new Van(doc.getCapacity(), doc.getCostPerKm(), doc.isSupportsFragile(), maxRange);
     }
 }

@@ -1,15 +1,14 @@
 'use client';
 import React, { useState } from 'react';
 import { PatternExecutionEvent, Order } from '@/types';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import PatternExecutionVisualizer from '@/components/visualizer/PatternExecutionVisualizer';
 import FactoryMethodAnimation from '@/components/visualizer/FactoryMethodAnimation';
 import StrategyAnimation from '@/components/visualizer/StrategyAnimation';
 import BuilderAnimation from '@/components/visualizer/BuilderAnimation';
-import CodeInspector from '@/components/visualizer/CodeInspector';
-import { BookOpen, Sparkles, Box, Truck, CheckCircle2, RotateCcw, Compass, Route } from 'lucide-react';
+import { Sparkles, Box, Truck, Compass } from 'lucide-react';
 
 // Pre-defined realistic simulation scenarios based on real backend behavior
 const SAMPLE_SCENARIOS: {
@@ -62,7 +61,7 @@ const SAMPLE_SCENARIOS: {
                 vehicleType: 'BIKE',
                 warehouseName: 'Chennai Warehouse',
                 status: 'SUCCESS',
-                details: { concreteClass: 'Bike', capacity: 10.0, costPerKm: 8.0, supportsFragile: true, baseDeliveryTime: 30 },
+                details: { concreteClass: 'Bike', capacity: 10.0, costPerKm: 8.0, maxRange: 50.0, supportsFragile: true, baseDeliveryTime: 30 },
             },
             {
                 sequence: 4,
@@ -114,7 +113,7 @@ const SAMPLE_SCENARIOS: {
                 vehicleType: 'VAN',
                 warehouseName: 'Chennai Warehouse',
                 status: 'SUCCESS',
-                details: { concreteClass: 'Van', capacity: 50.0, costPerKm: 15.0, supportsFragile: true, baseDeliveryTime: 45 },
+                details: { concreteClass: 'Van', capacity: 50.0, costPerKm: 15.0, maxRange: 300.0, supportsFragile: true, baseDeliveryTime: 45 },
             },
             {
                 sequence: 8,
@@ -148,7 +147,7 @@ const SAMPLE_SCENARIOS: {
                 details: { strategyId: 'BALANCED', finalScore: 91.50, distance: 12.4, cost: 99.20 },
             },
             {
-                sequence: 9,
+                sequence: 10,
                 phase: 'BUILDER',
                 eventType: 'BUILDER_INIT',
                 message: 'new DeliveryPlan.Builder() initialized',
@@ -156,7 +155,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 10,
+                sequence: 11,
                 phase: 'BUILDER',
                 eventType: 'BUILDER_METHOD',
                 message: '.order(order)',
@@ -166,7 +165,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 11,
+                sequence: 12,
                 phase: 'BUILDER',
                 eventType: 'BUILDER_METHOD',
                 message: '.warehouse(warehouse)',
@@ -176,7 +175,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 12,
+                sequence: 13,
                 phase: 'BUILDER',
                 eventType: 'BUILDER_METHOD',
                 message: '.vehicle(vehicle)',
@@ -186,7 +185,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 13,
+                sequence: 14,
                 phase: 'BUILDER',
                 eventType: 'BUILDER_METHOD',
                 message: '.priority("NORMAL")',
@@ -196,7 +195,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 14,
+                sequence: 15,
                 phase: 'BUILDER',
                 eventType: 'BUILDER_METHOD',
                 message: '.distance(12.4)',
@@ -206,7 +205,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 15,
+                sequence: 16,
                 phase: 'BUILDER',
                 eventType: 'BUILDER_METHOD',
                 message: '.estimatedCost(99.2)',
@@ -216,7 +215,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 16,
+                sequence: 17,
                 phase: 'BUILDER',
                 eventType: 'BUILDER_METHOD',
                 message: '.estimatedTime(54)',
@@ -226,7 +225,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 17,
+                sequence: 18,
                 phase: 'BUILDER',
                 eventType: 'BUILDER_METHOD',
                 message: '.allocationScore(91.5)',
@@ -236,7 +235,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 18,
+                sequence: 19,
                 phase: 'BUILDER',
                 eventType: 'BUILDER_METHOD',
                 message: '.fragileHandling(false)',
@@ -246,7 +245,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 19,
+                sequence: 20,
                 phase: 'BUILDER',
                 eventType: 'BUILDER_METHOD',
                 message: '.reason("Best balance of distance, cost, capacity and priority")',
@@ -256,7 +255,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 20,
+                sequence: 21,
                 phase: 'BUILDER',
                 eventType: 'BUILD_COMPLETE',
                 message: '.build() invoked: Mandatory validations passed. Immutable DeliveryPlan instance constructed.',
@@ -264,7 +263,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 21,
+                sequence: 22,
                 phase: 'BUILDER',
                 eventType: 'PERSIST_COMPLETE',
                 message: 'DeliveryPlan persisted to database (collection: delivery_plans)',
@@ -315,7 +314,7 @@ const SAMPLE_SCENARIOS: {
                 vehicleType: 'BIKE',
                 warehouseName: 'Vellore Central Warehouse',
                 status: 'SUCCESS',
-                details: { concreteClass: 'Bike', capacity: 10.0, costPerKm: 8.0, supportsFragile: true },
+                details: { concreteClass: 'Bike', capacity: 10.0, costPerKm: 8.0, maxRange: 50.0, supportsFragile: true },
             },
             {
                 sequence: 4,
@@ -344,7 +343,7 @@ const SAMPLE_SCENARIOS: {
                 vehicleType: 'TRUCK',
                 warehouseName: 'Vellore Central Warehouse',
                 status: 'SUCCESS',
-                details: { concreteClass: 'Truck', capacity: 500.0, costPerKm: 30.0, supportsFragile: false },
+                details: { concreteClass: 'Truck', capacity: 500.0, costPerKm: 30.0, maxRange: 999999, supportsFragile: false },
             },
             {
                 sequence: 7,
@@ -373,7 +372,7 @@ const SAMPLE_SCENARIOS: {
                 vehicleType: 'VAN',
                 warehouseName: 'Vellore Central Warehouse',
                 status: 'SUCCESS',
-                details: { concreteClass: 'Van', capacity: 50.0, costPerKm: 15.0, supportsFragile: true },
+                details: { concreteClass: 'Van', capacity: 50.0, costPerKm: 15.0, maxRange: 300.0, supportsFragile: true },
             },
             {
                 sequence: 10,
@@ -419,7 +418,7 @@ const SAMPLE_SCENARIOS: {
                 details: { strategyId: 'FASTEST', finalScore: 86.40, distance: 8.5, cost: 209.38 },
             },
             {
-                sequence: 12,
+                sequence: 13,
                 phase: 'BUILDER',
                 eventType: 'BUILDER_INIT',
                 message: 'new DeliveryPlan.Builder() initialized',
@@ -427,7 +426,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 13,
+                sequence: 14,
                 phase: 'BUILDER',
                 eventType: 'BUILDER_METHOD',
                 message: '.order(order)',
@@ -437,7 +436,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 14,
+                sequence: 15,
                 phase: 'BUILDER',
                 eventType: 'BUILDER_METHOD',
                 message: '.warehouse(warehouse)',
@@ -447,7 +446,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 15,
+                sequence: 16,
                 phase: 'BUILDER',
                 eventType: 'BUILDER_METHOD',
                 message: '.vehicle(vehicle)',
@@ -457,7 +456,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 16,
+                sequence: 17,
                 phase: 'BUILDER',
                 eventType: 'BUILDER_METHOD',
                 message: '.priority("URGENT")',
@@ -467,7 +466,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 17,
+                sequence: 18,
                 phase: 'BUILDER',
                 eventType: 'BUILDER_METHOD',
                 message: '.distance(8.5)',
@@ -477,7 +476,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 18,
+                sequence: 19,
                 phase: 'BUILDER',
                 eventType: 'BUILDER_METHOD',
                 message: '.estimatedCost(209.38)',
@@ -487,7 +486,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 19,
+                sequence: 20,
                 phase: 'BUILDER',
                 eventType: 'BUILDER_METHOD',
                 message: '.fragileHandling(true)',
@@ -497,7 +496,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 20,
+                sequence: 21,
                 phase: 'BUILDER',
                 eventType: 'BUILD_COMPLETE',
                 message: '.build() invoked: Mandatory validations passed. Immutable DeliveryPlan instance constructed.',
@@ -505,7 +504,7 @@ const SAMPLE_SCENARIOS: {
                 status: 'SUCCESS',
             },
             {
-                sequence: 21,
+                sequence: 22,
                 phase: 'BUILDER',
                 eventType: 'PERSIST_COMPLETE',
                 message: 'DeliveryPlan persisted to database (collection: delivery_plans)',

@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
 import { 
     Play, Pause, RotateCcw, StepForward, FastForward, 
-    Code2, Layers, CheckCircle2, ChevronRight, AlertCircle 
+    Code2, Layers, AlertCircle 
 } from 'lucide-react';
 import FactoryMethodAnimation from './FactoryMethodAnimation';
 import StrategyAnimation from './StrategyAnimation';
@@ -26,25 +26,19 @@ export default function PatternExecutionVisualizer({
 }: PatternExecutionVisualizerProps) {
     const [currentIndex, setCurrentIndex] = useState<number>(0);
     const [isPlaying, setIsPlaying] = useState<boolean>(true);
-    const [playbackSpeed, setPlaybackSpeed] = useState<number>(1000); // 1 sec per step
-    const [selectedEvent, setSelectedEvent] = useState<PatternExecutionEvent | null>(null);
+    const [playbackSpeed] = useState<number>(1000); // 1 sec per step
+    const [userSelectedEvent, setUserSelectedEvent] = useState<PatternExecutionEvent | null>(null);
     const [showCodeInspector, setShowCodeInspector] = useState<boolean>(true);
 
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
     const totalEvents = events.length;
     const currentEvent = events[currentIndex] || events[0];
+    const selectedEvent = userSelectedEvent || currentEvent;
 
     // Determine current phase from active event
     const activePhase = currentEvent ? currentEvent.phase : 'FACTORY';
     const isCompleted = currentIndex >= totalEvents - 1;
-
-    // Default select event when current changes if user hasn't explicitly clicked one
-    useEffect(() => {
-        if (currentEvent) {
-            setSelectedEvent(currentEvent);
-        }
-    }, [currentIndex]);
 
     // Timer playback
     useEffect(() => {
@@ -213,7 +207,7 @@ export default function PatternExecutionVisualizer({
                         currentEventIndex={Math.min(currentIndex, factoryEventsCount - 1)}
                         order={order}
                         selectedEventId={selectedEvent?.sequence}
-                        onSelectEvent={ev => setSelectedEvent(ev)}
+                        onSelectEvent={ev => setUserSelectedEvent(ev)}
                     />
                 </Card>
 
@@ -225,19 +219,19 @@ export default function PatternExecutionVisualizer({
                             currentEventIndex={currentIndex}
                             order={order}
                             selectedEventId={selectedEvent?.sequence}
-                            onSelectEvent={ev => setSelectedEvent(ev)}
+                            onSelectEvent={ev => setUserSelectedEvent(ev)}
                         />
                     </Card>
                 )}
 
                 {/* 3. Builder phase */}
-                {currentIndex >= factoryEventsCount + strategyEventsCount - 1 && (
+                {builderEventsCount > 0 && currentIndex >= factoryEventsCount + strategyEventsCount - 1 && (
                     <Card className="p-6 border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 animate-in fade-in duration-500">
                         <BuilderAnimation
                             events={events}
                             currentEventIndex={currentIndex}
                             selectedEventId={selectedEvent?.sequence}
-                            onSelectEvent={ev => setSelectedEvent(ev)}
+                            onSelectEvent={ev => setUserSelectedEvent(ev)}
                         />
                     </Card>
                 )}
@@ -256,7 +250,6 @@ export default function PatternExecutionVisualizer({
                             <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
                                 Trace Events ({totalEvents})
                             </span>
-                            <span className="text-[10px] text-slate-400">Click to inspect</span>
                         </div>
 
                         <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 font-sans text-xs">
@@ -267,9 +260,9 @@ export default function PatternExecutionVisualizer({
 
                                 return (
                                     <div
-                                        key={ev.sequence}
+                                        key={`${ev.sequence}-${idx}`}
                                         onClick={() => {
-                                            setSelectedEvent(ev);
+                                            setUserSelectedEvent(ev);
                                             setCurrentIndex(idx);
                                         }}
                                         className={`p-2 rounded cursor-pointer transition-all border text-left ${

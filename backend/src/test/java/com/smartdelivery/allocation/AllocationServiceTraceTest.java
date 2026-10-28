@@ -133,4 +133,65 @@ class AllocationServiceTraceTest {
         assertTrue(trace.stream().anyMatch(e -> "BUILDER".equals(e.getPhase()) && "BUILD_COMPLETE".equals(e.getEventType())));
         assertTrue(trace.stream().anyMatch(e -> "BUILDER".equals(e.getPhase()) && "PERSIST_COMPLETE".equals(e.getEventType())));
     }
+
+    @Test
+    void testBikeRejectedWhenDistanceExceedsMaxRange() {
+        // Prepare order: lightweight (5kg) but far away (approx 78km)
+        Order order = new Order();
+        order.setId("order-202");
+        order.setDestination("Distant Depot");
+        order.setDestinationLatitude(13.7000);
+        order.setDestinationLongitude(80.2000);
+        order.setPackageWeight(5.0); // 5kg is well within Bike's 10kg capacity
+        order.setPackageType(Order.PackageType.STANDARD);
+        order.setPriority(Order.Priority.NORMAL);
+
+        Warehouse warehouse = new Warehouse();
+        warehouse.setId("wh-1");
+        warehouse.setName("Chennai Hub");
+        warehouse.setLatitude(13.0000);
+        warehouse.setLongitude(80.2000);
+        warehouse.setActive(true);
+
+        VehicleDocument bikeDoc = new VehicleDocument();
+        bikeDoc.setId("v-bike");
+        bikeDoc.setType("BIKE");
+        bikeDoc.setCapacity(10.0);
+        bikeDoc.setCostPerKm(8.0);
+        bikeDoc.setAvailable(true);
+        bikeDoc.setSupportsFragile(true);
+        bikeDoc.setMaxRange(50.0);
+
+        VehicleDocument vanDoc = new VehicleDocument();
+        vanDoc.setId("v-van");
+        vanDoc.setType("VAN");
+        vanDoc.setCapacity(50.0);
+        vanDoc.setCostPerKm(15.0);
+        vanDoc.setAvailable(true);
+        vanDoc.setSupportsFragile(true);
+        vanDoc.setMaxRange(300.0);
+
+        when(orderRepository.findById("order-202")).thenReturn(Optional.of(order));
+        when(warehouseRepository.findByActiveTrue()).thenReturn(List.of(warehouse));
+        when(vehicleRepository.findByAvailableTrue()).thenReturn(List.of(bikeDoc, vanDoc));
+
+        Map<String, Object> result = allocationService.allocateOrder("order-202");
+
+        @SuppressWarnings("unchecked")
+        List<PatternExecutionEvent> trace = (List<PatternExecutionEvent>) result.get("executionTrace");
+        assertNotNull(trace);
+
+        // Verify Bike rejection specifically due to max range
+        PatternExecutionEvent bikeRejection = trace.stream()
+                .filter(e -> "BIKE".equals(e.getVehicleType()) && "REJECTED".equals(e.getStatus()))
+                .findFirst()
+                .orElse(null);
+        assertNotNull(bikeRejection, "Bike must be rejected due to distance range limit");
+        assertTrue(bikeRejection.getRejectionReason().toLowerCase().contains("range") || bikeRejection.getRejectionReason().toLowerCase().contains("distance"));
+
+        // Verify Van was allocated successfully
+        AllocationCandidate winner = (AllocationCandidate) result.get("recommendedPlan");
+        assertNotNull(winner);
+        assertEquals("VAN", winner.getVehicle().getType());
+    }
 }

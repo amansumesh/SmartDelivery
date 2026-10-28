@@ -30,6 +30,7 @@ export interface Vehicle {
     costPerKm: number;
     available: boolean;
     supportsFragile: boolean;
+    maxRange?: number;
 }
 
 export interface AllocationCandidate {
@@ -59,8 +60,8 @@ export interface PatternExecutionEvent {
     rejectionReason?: string;
     builderMethod?: string;
     fieldName?: string;
-    fieldValue?: any;
-    details?: Record<string, any>;
+    fieldValue?: unknown;
+    details?: Record<string, unknown>;
 }
 
 export interface AllocationResult {

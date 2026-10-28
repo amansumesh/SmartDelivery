@@ -14,4 +14,5 @@ public class VehicleDocument {
     private double costPerKm;
     private boolean available;
     private boolean supportsFragile;
+    private Double maxRange;
 }

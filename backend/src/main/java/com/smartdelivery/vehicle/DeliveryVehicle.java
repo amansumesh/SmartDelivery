@@ -6,4 +6,5 @@ public interface DeliveryVehicle {
     double getCostPerKm();
     int getDeliveryTime();
     boolean supportsFragile();
+    double getMaxRange();
 }

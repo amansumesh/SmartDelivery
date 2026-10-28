@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 public class BikeFactory extends VehicleFactory {
     @Override
     public DeliveryVehicle createVehicle(VehicleDocument doc) {
-        return new Bike(doc.getCapacity(), doc.getCostPerKm(), doc.isSupportsFragile());
+        double maxRange = (doc.getMaxRange() != null && doc.getMaxRange() > 0) ? doc.getMaxRange() : 50.0;
+        return new Bike(doc.getCapacity(), doc.getCostPerKm(), doc.isSupportsFragile(), maxRange);
     }
 }

@@ -44,10 +44,10 @@ export default function BuilderAnimation({
     const isPersisted = builderEvents.some(e => e.eventType === 'PERSIST_COMPLETE');
 
     // Build plan snapshot object from visible field events
-    const planSnapshot: Record<string, any> = {};
+    const planSnapshot: Record<string, React.ReactNode> = {};
     builderEvents.forEach(e => {
         if (e.fieldName && e.fieldValue !== undefined) {
-            planSnapshot[e.fieldName] = e.fieldValue;
+            planSnapshot[e.fieldName] = String(e.fieldValue);
         }
     });
 
@@ -82,7 +82,7 @@ export default function BuilderAnimation({
                     </div>
 
                     <div className="rounded-xl border border-slate-800 bg-slate-950 p-4 font-mono text-xs overflow-x-auto shadow-inner space-y-1">
-                        <div className="text-slate-500">// Concrete Step-by-Step Invocation:</div>
+                        <div className="text-slate-500">{"// Concrete Step-by-Step Invocation:"}</div>
                         {BUILDER_STEPS.map((step, idx) => {
                             const matchingEvent = builderEvents.find(
                                 e => e.builderMethod === step.method || (step.field === 'build' && e.eventType === 'BUILD_COMPLETE')
@@ -249,8 +249,7 @@ export default function BuilderAnimation({
 
                             {isPersisted && (
                                 <div className="mt-3 p-2 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/60 rounded text-xs text-emerald-700 dark:text-emerald-300 flex items-center gap-2">
-                                    <ShieldCheck className="w-4 h-4 shrink-0 text-emerald-600" />
-                                    <span>Persisted to MongoDB (<code className="text-[10px] font-mono">delivery_plans</code> collection).</span>
+                                    <span>Saved to Database</span>
                                 </div>
                             )}
                         </div>

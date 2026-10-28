@@ -2,8 +2,7 @@
 import React from 'react';
 import { PatternExecutionEvent, Order } from '@/types';
 import { Badge } from '@/components/ui/badge';
-import { Card } from '@/components/ui/card';
-import { Compass, Zap, PiggyBank, Route, CheckCircle2, Sliders, ArrowRight, Award } from 'lucide-react';
+import { Compass, Zap, PiggyBank, Route, Sliders, ArrowRight, Award } from 'lucide-react';
 
 interface StrategyAnimationProps {
     events: PatternExecutionEvent[];
@@ -16,12 +15,10 @@ interface StrategyAnimationProps {
 export default function StrategyAnimation({
     events,
     currentEventIndex,
-    order,
     selectedEventId,
     onSelectEvent,
 }: StrategyAnimationProps) {
     const visibleEvents = events.filter((_, idx) => idx <= currentEventIndex);
-    const strategyEvents = events.filter(e => e.phase === 'STRATEGY');
     const visibleStrategyEvents = visibleEvents.filter(e => e.phase === 'STRATEGY');
 
     // Find active strategy selection event
@@ -30,8 +27,8 @@ export default function StrategyAnimation({
     const winnerEvent = visibleStrategyEvents.find(e => e.eventType === 'WINNER_SELECTED');
 
     const activeStrategyId = strategySelectedEvent?.details?.strategyId || 'BALANCED';
-    const activeStrategyName = strategySelectedEvent?.details?.strategyName || 'Strategy Evaluator';
-    const strategyDescription = strategySelectedEvent?.details?.description || 'Dynamically evaluates candidate scoring metrics.';
+    const activeStrategyName = String(strategySelectedEvent?.details?.strategyName || 'Strategy Evaluator');
+    const strategyDescription = String(strategySelectedEvent?.details?.description || 'Dynamically evaluates candidate scoring metrics.');
 
     const strategiesList = [
         {
@@ -115,7 +112,7 @@ export default function StrategyAnimation({
                                 </p>
                             </div>
                             <div className="mt-3 pt-2 border-t border-slate-200 text-[10px] font-mono text-slate-400">
-                                @Component("{strat.id}")
+                                @Component(&quot;{strat.id}&quot;)
                             </div>
                         </div>
                     );
@@ -160,8 +157,14 @@ export default function StrategyAnimation({
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 gap-2">
-                            {scoredCandidates.map((ev, index) => {
-                                const isWinner = winnerEvent && ev.vehicleId === winnerEvent.vehicleId;
+                            {scoredCandidates.map((ev) => {
+                                const isWinner = Boolean(
+                                    winnerEvent &&
+                                    (ev.vehicleType || ev.vehicleId) === (winnerEvent.vehicleType || winnerEvent.vehicleId) &&
+                                    (ev.warehouseId && winnerEvent.warehouseId
+                                        ? ev.warehouseId === winnerEvent.warehouseId
+                                        : ev.warehouseName === winnerEvent.warehouseName)
+                                );
                                 const isCurSelected = selectedEventId === ev.sequence;
                                 const details = ev.details || {};
 
@@ -211,7 +214,7 @@ export default function StrategyAnimation({
                                         </div>
 
                                         {/* Score breakdown metrics pill row */}
-                                        {details.finalScore && (
+                                        {Boolean(details.finalScore) && (
                                             <div className="grid grid-cols-5 gap-1.5 mt-2.5 pt-2 border-t border-slate-100 dark:border-slate-800/80 text-[10px]">
                                                 <div className="bg-slate-100/70 dark:bg-slate-800 px-1.5 py-0.5 rounded text-center">
                                                     <span className="text-slate-400 block text-[9px]">Distance</span>

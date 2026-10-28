@@ -7,7 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { MapPin, Truck, CheckCircle2, Clock, IndianRupee, Activity, Box, ShieldCheck, Zap } from 'lucide-react';
+import { MapPin, Truck, CheckCircle2, Clock, IndianRupee, Activity } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 import PatternExecutionVisualizer from '@/components/visualizer/PatternExecutionVisualizer';
@@ -26,22 +26,6 @@ function AllocationContent() {
     const [error, setError] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<'visualizer' | 'summary'>('visualizer');
 
-    useEffect(() => {
-        getOrders().then(o => {
-            setOrders(o);
-            if (initialOrderId) {
-                const found = o.find(x => x.id === initialOrderId);
-                if (found) setActiveOrder(found);
-            }
-        });
-    }, [initialOrderId]);
-
-    useEffect(() => {
-        if(initialOrderId) {
-            handleAllocate(initialOrderId, selectedStrategy);
-        }
-    }, [initialOrderId]);
-
     const handleAllocate = async (id: string, strat?: string) => {
         if(!id) return;
         setLoading(true);
@@ -54,12 +38,48 @@ function AllocationContent() {
             setResult(res);
             const found = orders.find(x => x.id === id);
             if (found) setActiveOrder(found);
-        } catch(e: any) {
-            setError(e.response?.data?.error || e.message);
+        } catch(e: unknown) {
+            const err = e as { response?: { data?: { error?: string } }; message?: string };
+            setError(err.response?.data?.error || err.message || 'Allocation failed');
         } finally {
             setLoading(false);
         }
     };
+
+    useEffect(() => {
+        getOrders().then(o => {
+            setOrders(o);
+            if (initialOrderId) {
+                const found = o.find(x => x.id === initialOrderId);
+                if (found) setActiveOrder(found);
+            }
+        });
+    }, [initialOrderId]);
+
+    useEffect(() => {
+        if (!initialOrderId) return;
+        let isCancelled = false;
+        const stratParam = selectedStrategy === 'AUTO' ? undefined : selectedStrategy;
+        
+        allocateOrder(initialOrderId, stratParam)
+            .then(res => {
+                if (!isCancelled) {
+                    setResult(res);
+                    const found = orders.find(x => x.id === initialOrderId);
+                    if (found) setActiveOrder(found);
+                }
+            })
+            .catch((e: unknown) => {
+                if (!isCancelled) {
+                    const err = e as { response?: { data?: { error?: string } }; message?: string };
+                    setError(err.response?.data?.error || err.message || 'Allocation failed');
+                }
+            });
+
+        return () => {
+            isCancelled = true;
+        };
+    }, [initialOrderId, selectedStrategy, orders]);
 
     const renderCandidateCard = (c: AllocationCandidate, isRecommended = false) => (
         <Card className={`relative overflow-hidden bg-white ${isRecommended ? 'ring-2 ring-red-600 shadow-md border-0' : 'shadow-sm border-slate-200'}`}>
@@ -152,7 +172,7 @@ function AllocationContent() {
                     <div className="flex flex-col sm:flex-row gap-4">
                         <Select 
                             value={selectedOrderId} 
-                            onValueChange={(val, _event) => {
+                            onValueChange={(val) => {
                                 const id = val ?? '';
                                 setSelectedOrderId(id);
                                 const found = orders.find(x => x.id === id);
@@ -173,7 +193,7 @@ function AllocationContent() {
 
                         <Select 
                             value={selectedStrategy} 
-                            onValueChange={(val, _event) => setSelectedStrategy(val ?? 'AUTO')}
+                            onValueChange={(val) => setSelectedStrategy(val ?? 'AUTO')}
                         >
                             <SelectTrigger className="w-full sm:w-[220px] border-slate-200">
                                 <SelectValue placeholder="Strategy (Auto)" />

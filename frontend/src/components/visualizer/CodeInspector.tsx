@@ -3,7 +3,7 @@ import React from 'react';
 import { PatternExecutionEvent } from '@/types';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Code2, ExternalLink } from 'lucide-react';
+import { Code2 } from 'lucide-react';
 
 interface CodeInspectorProps {
     activeEvent?: PatternExecutionEvent | null;
@@ -132,12 +132,13 @@ DeliveryPlan.Builder builder = new DeliveryPlan.Builder();`,
             pattern: 'Factory Method Pattern',
             className: `com.smartdelivery.factory.${fClass}`,
             methodName: 'public DeliveryVehicle createVehicle(VehicleDocument doc)',
-            explanation: `Concrete creator instantiates and returns a polymorphic '${vClass}' instance implementing DeliveryVehicle.`,
+            explanation: `Concrete creator instantiates and returns a polymorphic '${vClass}' instance implementing DeliveryVehicle with range and payload constraints.`,
             code: `@Component
 public class ${fClass} extends VehicleFactory {
     @Override
     public DeliveryVehicle createVehicle(VehicleDocument doc) {
-        return new ${vClass}(doc.getCapacity(), doc.getCostPerKm(), doc.isSupportsFragile());
+        double maxRange = doc.getMaxRange() != null ? doc.getMaxRange() : ${vType === 'BIKE' ? '50.0' : vType === 'VAN' ? '300.0' : '1000.0'};
+        return new ${vClass}(doc.getCapacity(), doc.getCostPerKm(), doc.isSupportsFragile(), maxRange);
     }
 }`,
             note: 'The caller treats the result as a generic DeliveryVehicle interface without knowing the concrete class.'
@@ -153,19 +154,22 @@ public class ${fClass} extends VehicleFactory {
             code: `// Capacity validation
 if (vehicle.getCapacity() < order.getPackageWeight()) continue;
 
+// Max distance / range limit validation (e.g. Bike max 50km)
+if (distance > vehicle.getMaxRange()) continue;
+
 // Package compatibility validation
 if (order.getPackageType() == Order.PackageType.FRAGILE && !vehicle.supportsFragile()) continue;`,
-            note: 'Vehicles that fail physical or safety constraints are excluded before running the scoring algorithm.'
+            note: 'Vehicles that fail physical, range limit, or safety constraints are excluded before running the scoring algorithm.'
         };
     }
 
     if (event.eventType === 'STRATEGY_SELECTED') {
-        const stratId = event.details?.strategyId || 'BALANCED';
+        const stratId = String(event.details?.strategyId || 'BALANCED');
         return {
             pattern: 'Strategy Pattern',
             className: 'com.smartdelivery.strategy.AllocationStrategyContext',
             methodName: 'resolveStrategy(String strategyKey, Order order)',
-            explanation: 'The Strategy Context selects the concrete algorithm based on user selection or dynamic order attributes.',
+            explanation: `Selected algorithm: ${stratId}. The Strategy Context selects the concrete algorithm based on user selection or dynamic order attributes.`,
             code: `@Component
 public class AllocationStrategyContext {
     private final Map<String, AllocationScoringStrategy> strategyMap;

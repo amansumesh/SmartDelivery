@@ -3,7 +3,7 @@ import React from 'react';
 import { PatternExecutionEvent, Order } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
-import { CheckCircle2, XCircle, ArrowRight, Cog, Truck, ShieldAlert, Cpu, Sparkles } from 'lucide-react';
+import { CheckCircle2, XCircle, ArrowRight, Cog, Truck, Cpu, Sparkles } from 'lucide-react';
 
 interface FactoryMethodAnimationProps {
     events: PatternExecutionEvent[];
@@ -21,7 +21,6 @@ export default function FactoryMethodAnimation({
     onSelectEvent,
 }: FactoryMethodAnimationProps) {
     const visibleEvents = events.filter((_, idx) => idx <= currentEventIndex);
-    const activeEvent = events[currentEventIndex];
 
     // Collect all unique vehicle types/instances evaluated so far
     const vehicleCreationEvents = visibleEvents.filter(e => e.eventType === 'VEHICLE_CREATED');
@@ -219,18 +218,19 @@ export default function FactoryMethodAnimation({
                     <h4 className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
                         Vehicle Instances &amp; Constraint Evaluation ({vehicleCreationEvents.length} Created)
                     </h4>
-                    <span className="text-xs text-slate-500">
-                        Click any event below to inspect the corresponding Java class and method
-                    </span>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {vehicleCreationEvents.map(vEvent => {
                         const vType = vEvent.vehicleType;
                         const vWh = vEvent.warehouseName;
-                        const capacity = vEvent.details?.capacity;
-                        const costPerKm = vEvent.details?.costPerKm;
-                        const supportsFragile = vEvent.details?.supportsFragile;
+                        const concreteClass = String(vEvent.details?.concreteClass || vType || '');
+                        const capacity = String(vEvent.details?.capacity ?? '-');
+                        const costPerKm = String(vEvent.details?.costPerKm ?? '-');
+                        const supportsFragile = Boolean(vEvent.details?.supportsFragile);
+                        const maxRange = vEvent.details?.maxRange != null
+                            ? Number(vEvent.details.maxRange)
+                            : (vType === 'BIKE' ? 50 : vType === 'VAN' ? 300 : Infinity);
 
                         // Find corresponding rejection or score event
                         const rejection = constraintEvents.find(
@@ -267,7 +267,7 @@ export default function FactoryMethodAnimation({
                                         </div>
                                         <div>
                                             <div className="font-semibold text-sm text-slate-900 dark:text-slate-100">
-                                                {vEvent.details?.concreteClass || vType}
+                                                {concreteClass}
                                             </div>
                                             <div className="text-[11px] text-slate-500">
                                                 {vWh}
@@ -286,7 +286,7 @@ export default function FactoryMethodAnimation({
                                 </div>
 
                                 {/* Vehicle properties created by Factory */}
-                                <div className="grid grid-cols-3 gap-2 mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px]">
+                                <div className="grid grid-cols-4 gap-2 mt-3 pt-2 border-t border-slate-100 dark:border-slate-800 text-[11px]">
                                     <div>
                                         <span className="text-slate-400 block text-[10px]">Capacity</span>
                                         <span className="font-medium">{capacity} kg</span>
@@ -294,6 +294,12 @@ export default function FactoryMethodAnimation({
                                     <div>
                                         <span className="text-slate-400 block text-[10px]">Cost / km</span>
                                         <span className="font-medium">₹{costPerKm}</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-slate-400 block text-[10px]">Max Range</span>
+                                        <span className="font-medium text-amber-600 dark:text-amber-400">
+                                            {maxRange >= 999999 ? 'Unlimited' : `${maxRange}km`}
+                                        </span>
                                     </div>
                                     <div>
                                         <span className="text-slate-400 block text-[10px]">Fragile</span>
